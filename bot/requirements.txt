@@ -1,4 +1,7 @@
 python-telegram-bot[ext]==21.6
+# Pin httpx <0.28: groq 0.11 / PTB 21 call httpx.AsyncClient(proxies=...),
+# which httpx>=0.28 removed (TypeError: unexpected keyword 'proxies').
+httpx==0.27.2
 groq==0.11.0
 SQLAlchemy[asyncio]==2.0.35
 asyncpg==0.29.0
