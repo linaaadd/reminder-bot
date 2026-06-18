@@ -1,0 +1,195 @@
+/* Telegram theme variables with sensible light-mode fallbacks.
+   applyTelegramTheme() overrides these from themeParams at runtime. */
+:root {
+  --tg-bg: #ffffff;
+  --tg-text: #000000;
+  --tg-hint: #999999;
+  --tg-link: #2481cc;
+  --tg-button: #2481cc;
+  --tg-button-text: #ffffff;
+  --tg-secondary-bg: #f1f1f1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px;
+  gap: 10px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-header h1 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.lang-switch {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+
+.banner {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.banner.empty {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-hint);
+}
+
+.banner.error {
+  background: #fdecec;
+  color: #c0392b;
+}
+
+.calendar-wrap {
+  flex: 1;
+  min-height: 0;
+  background: var(--tg-bg);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Floating action button to create a reminder. */
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  font-size: 1.8rem;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--tg-bg);
+  border-radius: 16px 16px 0 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--tg-hint);
+}
+
+.field input {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  min-width: 90px;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.btn.primary {
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+}
+
+.btn.danger {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--tg-hint);
+}
+
+/* Calendar event status colors */
+.rbc-event-done {
+  background-color: #27ae60 !important;
+  opacity: 0.75;
+}
+
+.rbc-event-cancelled {
+  background-color: var(--tg-hint) !important;
+  text-decoration: line-through;
+}
+
+/* Make react-big-calendar readable in dark Telegram themes */
+[data-theme="dark"] .rbc-off-range-bg {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .rbc-today {
+  background: rgba(255, 255, 255, 0.08);
+}
