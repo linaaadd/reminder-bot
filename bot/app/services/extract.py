@@ -49,6 +49,13 @@ Reply with a SINGLE JSON object, no markdown, with exactly these keys:
 }
 
 Rules:
+- "title" is the TASK itself, phrased concisely as an action to do — use the
+  infinitive/dictionary form of the verb, NOT the grammatical form the speaker
+  used about themselves. Examples:
+    "напомни чтобы я посмотрела бота" -> title "посмотреть бота"
+    "remind me I called mom"          -> title "call mom"
+    "erinnere mich dass ich Brot kaufe" -> title "Brot kaufen"
+  Keep it in the user's language. Drop filler like "напомни/remind me".
 - "datetime" must be LOCAL wall-clock time in the user's timezone (no offset, no Z).
 - If the user gives a time without a date, assume the soonest future occurrence.
 - If no time can be determined, set datetime=null and needs_clarification=true,

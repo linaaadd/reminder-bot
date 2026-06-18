@@ -27,7 +27,9 @@ export default function App() {
       setReminders(await api.list());
     } catch (e) {
       console.error(e);
-      setError(t.loadError);
+      // TEMP DIAGNOSTIC: surface the real error (status/body/url) in the banner.
+      const detail = e instanceof Error ? e.message : String(e);
+      setError(`${t.loadError}\n\n🧪 ${import.meta.env.VITE_API_URL || "(no VITE_API_URL)"}\n${detail}`);
     }
   }, [t.loadError]);
 
