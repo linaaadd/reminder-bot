@@ -2,7 +2,10 @@
 import { initData } from "./telegram";
 import type { Me, Reminder } from "./types";
 
-const BASE = import.meta.env.VITE_API_URL ?? "";
+// Trim stray whitespace/newline and any trailing slash: a trailing space in
+// the VITE_API_URL env var produces a malformed fetch URL ("…app /api/…") that
+// fails with a misleading "Failed to fetch".
+const BASE = (import.meta.env.VITE_API_URL ?? "").trim().replace(/\/+$/, "");
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
