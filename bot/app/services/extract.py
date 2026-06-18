@@ -14,14 +14,11 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from groq import AsyncGroq
-
 from app.config import settings
+from app.services.groq_client import client as _client
 from app.services.timeutils import local_naive_to_utc, now_in
 
 logger = logging.getLogger(__name__)
-
-_client = AsyncGroq(api_key=settings.groq_api_key)
 
 
 @dataclass

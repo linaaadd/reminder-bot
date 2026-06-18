@@ -14,13 +14,10 @@ import asyncio
 import logging
 import shutil
 
-from groq import AsyncGroq
-
 from app.config import settings
+from app.services.groq_client import client as _client
 
 logger = logging.getLogger(__name__)
-
-_client = AsyncGroq(api_key=settings.groq_api_key)
 
 
 async def _transcribe_bytes(data: bytes, filename: str) -> str:
