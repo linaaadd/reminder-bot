@@ -110,6 +110,30 @@ async def _setup_bot_menu(application: Application) -> None:
         logger.warning("Could not set chat menu button: %s", exc)
 
 
+async def _probe_groq() -> None:
+    """Log whether the container can reach Groq (diagnoses egress issues)."""
+    import socket
+
+    from app.services.stt import _root_cause
+
+    # 1) DNS resolution check.
+    try:
+        infos = socket.getaddrinfo("api.groq.com", 443)
+        addrs = sorted({i[4][0] for i in infos})
+        logger.info("Groq DNS OK -> %s", addrs)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Groq DNS FAILED -> %s", exc)
+
+    # 2) HTTPS reachability check via the shared IPv4 client.
+    try:
+        from app.services.groq_client import _http_client
+
+        resp = await _http_client.get("https://api.groq.com/", timeout=15.0)
+        logger.info("Groq HTTPS OK -> status %s", resp.status_code)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Groq HTTPS FAILED -> ROOT CAUSE: %s", _root_cause(exc))
+
+
 async def _run() -> None:
     # Build and start the Telegram application.
     application: Application = (
@@ -126,6 +150,10 @@ async def _run() -> None:
         await _setup_bot_menu(application)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Bot menu setup failed (continuing): %s", exc)
+
+    # One-time connectivity probe to Groq so reachability problems surface in
+    # the logs at boot (independent of any voice/text message).
+    await _probe_groq()
 
     # Scheduler needs the bot to deliver messages; restore jobs after a restart.
     scheduler.start(application.bot)

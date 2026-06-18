@@ -53,6 +53,19 @@ async def _ffmpeg_to_mp3(data: bytes) -> bytes | None:
     return out
 
 
+def _root_cause(exc: BaseException) -> str:
+    """Walk the __cause__/__context__ chain to the deepest underlying error."""
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        nxt = cur.__cause__ or cur.__context__
+        if nxt is None:
+            break
+        cur = nxt
+    return f"{type(cur).__name__}: {cur}"
+
+
 async def transcribe(data: bytes, *, filename: str = "audio.ogg") -> str:
     """Transcribe audio bytes to text. Raises on unrecoverable failure."""
     logger.info("Transcribing %d bytes (%s)", len(data), filename)
@@ -60,9 +73,12 @@ async def transcribe(data: bytes, *, filename: str = "audio.ogg") -> str:
         text = await _transcribe_bytes(data, filename)
         return text.strip()
     except Exception as exc:  # noqa: BLE001 - we want a fallback path
-        # Log the real error (status/body) so deploy issues are diagnosable.
+        # Log the real root cause on one line so deploy issues are diagnosable
+        # even when the full traceback gets truncated.
         logger.warning(
-            "Whisper raw upload failed: %r; trying ffmpeg fallback", exc
+            "Whisper raw upload failed: %r | ROOT CAUSE -> %s; trying ffmpeg",
+            exc,
+            _root_cause(exc),
         )
         mp3 = await _ffmpeg_to_mp3(data)
         if mp3 is None:
