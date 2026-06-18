@@ -1,6 +1,7 @@
 """Application configuration loaded from environment / .env file."""
 from __future__ import annotations
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,7 +14,11 @@ class Settings(BaseSettings):
 
     # --- bundled FastAPI server ---
     api_host: str = "0.0.0.0"
-    api_port: int = 8000
+    # Railway injects $PORT at runtime; prefer it, then API_PORT, then 8000.
+    api_port: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("PORT", "API_PORT"),
+    )
 
     # --- defaults ---
     default_timezone: str = "Europe/Berlin"
