@@ -9,6 +9,7 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS, ru, de, uk, es } from "date-fns/locale";
 import type { Lang, Strings } from "../i18n";
 import type { Reminder } from "../types";
+import { CalendarToolbar } from "./CalendarToolbar";
 
 const LOCALES = { en: enUS, ru, de, uk, es } as const;
 
@@ -92,6 +93,9 @@ export function ReminderCalendar({
       selectable
       popup
       messages={messages}
+      components={{
+        toolbar: (props) => <CalendarToolbar {...props} t={t} />,
+      }}
       onSelectEvent={(e) => onSelectEvent((e as ReminderEvent).id)}
       onSelectSlot={(slot) => onSelectSlot(slot.start as Date)}
       eventPropGetter={(e) => {

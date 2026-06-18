@@ -90,7 +90,9 @@ async def extract(text: str, *, tz: str) -> Extraction:
         logger.warning("LLM returned non-JSON: %r", raw)
         return Extraction(None, None, True, None, None)
 
-    title = (data.get("title") or "").strip() or None
+    from app.constants import capitalize_first
+
+    title = capitalize_first((data.get("title") or "").strip()) or None
     dt_local_str = data.get("datetime")
     needs = bool(data.get("needs_clarification", False))
     reply_language = data.get("reply_language")

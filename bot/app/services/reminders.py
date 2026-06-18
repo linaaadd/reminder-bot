@@ -14,6 +14,7 @@ from app.constants import (
     STATUS_CANCELLED,
     STATUS_DONE,
     STATUS_PENDING,
+    capitalize_first,
     validate_source,
     validate_status,
 )
@@ -32,7 +33,7 @@ async def create(
     validate_source(source)
     reminder = Reminder(
         user_id=user_id,
-        title=title,
+        title=capitalize_first(title),
         remind_at=remind_at,
         source=source,
         original_text=original_text,
@@ -99,7 +100,7 @@ async def update(
     if reminder is None:
         return None
     if title is not None:
-        reminder.title = title
+        reminder.title = capitalize_first(title)
     if remind_at is not None:
         reminder.remind_at = remind_at
     if status is not None:

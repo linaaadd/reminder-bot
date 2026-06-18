@@ -1,13 +1,39 @@
-/* Telegram theme variables with sensible light-mode fallbacks.
-   applyTelegramTheme() overrides these from themeParams at runtime. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ============================================================
+   Design tokens — flat design layered over Telegram themeParams.
+   Telegram vars (--tg-*) are set at runtime; we provide fallbacks
+   and derive semantic tokens so light/dark both look intentional.
+   ============================================================ */
 :root {
-  --tg-bg: #ffffff;
-  --tg-text: #000000;
-  --tg-hint: #999999;
-  --tg-link: #2481cc;
-  --tg-button: #2481cc;
-  --tg-button-text: #ffffff;
-  --tg-secondary-bg: #f1f1f1;
+  /* Telegram-driven (with light fallbacks) */
+  --bg: var(--tg-bg, #ffffff);
+  --text: var(--tg-text, #0f172a);
+  --hint: var(--tg-hint, #64748b);
+  --surface: var(--tg-secondary-bg, #f1f5f9);
+  --accent: var(--tg-button, #2563eb);
+  --accent-text: var(--tg-button-text, #ffffff);
+
+  /* Semantic */
+  --success: #059669;
+  --danger: #dc2626;
+  --border: rgba(128, 128, 128, 0.18);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+
+  /* Spacing (8pt rhythm) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 * {
@@ -22,176 +48,475 @@ body,
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--tg-bg);
-  color: var(--tg-text);
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Visible focus for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ============================ Layout ============================ */
 .app {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 12px;
-  gap: 10px;
+  height: 100dvh;
+  padding: var(--sp-3) var(--sp-3) 0;
+  gap: var(--sp-3);
 }
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-top: var(--sp-1);
 }
 
 .app-header h1 {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .lang-switch {
-  background: var(--tg-secondary-bg);
-  color: var(--tg-text);
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 0.9rem;
+  appearance: none;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 6px 28px 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
 }
 
+/* ============================ Banners ============================ */
 .banner {
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
   font-size: 0.9rem;
   white-space: pre-line;
   word-break: break-word;
 }
 
 .banner.empty {
-  background: var(--tg-secondary-bg);
-  color: var(--tg-hint);
+  background: var(--surface);
+  color: var(--hint);
+  text-align: center;
 }
 
 .banner.error {
-  background: #fdecec;
-  color: #c0392b;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  font-weight: 500;
 }
 
+/* ============================ Calendar card ============================ */
 .calendar-wrap {
   flex: 1;
   min-height: 0;
-  background: var(--tg-bg);
-  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-/* Floating action button to create a reminder. */
-.fab {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  background: var(--tg-button);
-  color: var(--tg-button-text);
-  font-size: 1.8rem;
-  line-height: 1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
+/* -------- Custom toolbar -------- */
+.cal-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
 }
 
-/* Modal */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cal-label {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: capitalize;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.15s ease;
+}
+.icon-btn:active {
+  background: var(--surface);
+}
+
+.today-btn {
+  height: 40px;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+.today-btn:active {
+  background: var(--surface);
+}
+
+/* Segmented control for views */
+.seg {
+  display: flex;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  gap: 2px;
+}
+.seg-item {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--hint);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.seg-item.active {
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================ react-big-calendar overrides ============================ */
+.rbc-calendar {
+  flex: 1;
+  min-height: 0;
+  font-family: var(--font);
+  color: var(--text);
+}
+
+/* Weekday header row */
+.rbc-month-header,
+.rbc-time-header-cell {
+  text-transform: uppercase;
+}
+.rbc-header {
+  border: none !important;
+  padding: var(--sp-2) 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--hint);
+}
+
+/* Grid lines: subtle, theme-aware */
+.rbc-month-view,
+.rbc-time-view {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid var(--border);
+}
+.rbc-day-bg + .rbc-day-bg,
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--border) !important;
+}
+.rbc-month-view .rbc-day-bg {
+  background: var(--bg);
+}
+.rbc-off-range-bg {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.rbc-off-range .rbc-button-link {
+  color: var(--hint);
+  opacity: 0.5;
+}
+
+/* Date numbers */
+.rbc-date-cell {
+  padding: 6px 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.rbc-button-link {
+  color: var(--text);
+}
+
+/* Today highlight */
+.rbc-today {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.rbc-now .rbc-button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+}
+
+/* Event chips */
+.rbc-event {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none !important;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  box-shadow: none;
+}
+.rbc-event:focus,
+.rbc-event.rbc-selected {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+  background: var(--accent);
+}
+.rbc-event-done {
+  background: var(--success) !important;
+}
+.rbc-event-done .rbc-event-content {
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+.rbc-event-cancelled {
+  background: var(--hint) !important;
+  opacity: 0.7;
+}
+.rbc-event-cancelled .rbc-event-content {
+  text-decoration: line-through;
+}
+
+.rbc-show-more {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.7rem;
+  background: transparent;
+}
+
+/* Time (week/day) views */
+.rbc-time-view .rbc-time-gutter,
+.rbc-time-view .rbc-label {
+  font-size: 0.72rem;
+  color: var(--hint);
+}
+.rbc-time-content,
+.rbc-time-header-content,
+.rbc-timeslot-group,
+.rbc-day-slot,
+.rbc-time-content > * + * {
+  border-color: var(--border) !important;
+}
+.rbc-current-time-indicator {
+  background: var(--danger);
+  height: 2px;
+}
+
+/* Agenda / list view */
+.rbc-agenda-view table.rbc-agenda-table {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td,
+.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  border-color: var(--border) !important;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.85rem;
+}
+.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  color: var(--hint);
+  font-weight: 600;
+}
+.rbc-agenda-empty {
+  color: var(--hint);
+  padding: var(--sp-4);
+  text-align: center;
+}
+
+/* ============================ FAB ============================ */
+.fab {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-pill);
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease;
+  z-index: 40;
+}
+.fab:active {
+  transform: scale(0.92);
+}
+
+/* ============================ Bottom-sheet modal ============================ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 50;
+  z-index: 100;
+  animation: fade-in 0.2s ease;
 }
 
 .modal {
   width: 100%;
-  max-width: 460px;
-  background: var(--tg-bg);
-  border-radius: 16px 16px 0 0;
-  padding: 18px;
+  max-width: 480px;
+  background: var(--bg);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: var(--sp-2) var(--sp-4) max(var(--sp-4), env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-4);
+  box-shadow: var(--shadow);
+  animation: sheet-up 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.modal h2 {
+.modal-grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--hint);
+  opacity: 0.4;
+  margin: var(--sp-2) auto 0;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-head h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--tg-hint);
+  gap: var(--sp-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hint);
 }
-
 .field input {
-  background: var(--tg-secondary-bg);
-  color: var(--tg-text);
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  padding: 14px;
   font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .modal-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
 }
 
 .btn {
-  flex: 1;
-  min-width: 90px;
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0 var(--sp-4);
   font-size: 0.95rem;
-  cursor: pointer;
-  background: var(--tg-secondary-bg);
-  color: var(--tg-text);
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text);
+  transition: transform 0.12s ease, opacity 0.15s ease;
 }
-
+.btn:active {
+  transform: scale(0.97);
+}
 .btn.primary {
-  background: var(--tg-button);
-  color: var(--tg-button-text);
+  flex: 1;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
 }
-
 .btn.danger {
-  background: #e74c3c;
-  color: #fff;
+  width: 50px;
+  padding: 0;
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+  border-color: transparent;
 }
 
-.btn.ghost {
-  background: transparent;
-  color: var(--tg-hint);
+/* ============================ Animation ============================ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
 }
 
-/* Calendar event status colors */
-.rbc-event-done {
-  background-color: #27ae60 !important;
-  opacity: 0.75;
-}
-
-.rbc-event-cancelled {
-  background-color: var(--tg-hint) !important;
-  text-decoration: line-through;
-}
-
-/* Make react-big-calendar readable in dark Telegram themes */
-[data-theme="dark"] .rbc-off-range-bg {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .rbc-today {
-  background: rgba(255, 255, 255, 0.08);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  .modal,
+  .modal-backdrop,
+  .fab {
+    animation: none !important;
+    transition: none !important;
+  }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Strings } from "../i18n";
 import type { Reminder } from "../types";
+import { CheckIcon, CloseIcon, TrashIcon } from "./icons";
 
 /** Format a Date as the value expected by <input type="datetime-local">. */
 function toLocalInput(d: Date): string {
@@ -51,8 +52,24 @@ export function ReminderModal({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>{isEdit ? t.editReminder : t.newReminder}</h2>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-grabber" />
+
+        <header className="modal-head">
+          <h2>{isEdit ? t.editReminder : t.newReminder}</h2>
+          <button
+            className="icon-btn"
+            onClick={onClose}
+            aria-label={t.cancel}
+          >
+            <CloseIcon />
+          </button>
+        </header>
 
         <label className="field">
           <span>{t.titleLabel}</span>
@@ -76,13 +93,11 @@ export function ReminderModal({
 
         <div className="modal-actions">
           <button className="btn primary" onClick={submit}>
+            <CheckIcon size={18} />
             {t.save}
           </button>
           {isEdit && reminder.status === "pending" && (
-            <button
-              className="btn"
-              onClick={() => onMarkDone(reminder.id)}
-            >
+            <button className="btn" onClick={() => onMarkDone(reminder.id)}>
               {t.markDone}
             </button>
           )}
@@ -90,13 +105,11 @@ export function ReminderModal({
             <button
               className="btn danger"
               onClick={() => onDelete(reminder.id)}
+              aria-label={t.delete}
             >
-              {t.delete}
+              <TrashIcon size={18} />
             </button>
           )}
-          <button className="btn ghost" onClick={onClose}>
-            {t.cancel}
-          </button>
         </div>
       </div>
     </div>

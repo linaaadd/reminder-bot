@@ -5,6 +5,7 @@ import { ReminderCalendar } from "./components/Calendar";
 import { LangSwitch } from "./components/LangSwitch";
 import { ReminderModal } from "./components/ReminderModal";
 import { detectLang, saveLang, strings, type Lang } from "./i18n";
+import { PlusIcon } from "./components/icons";
 import type { Reminder } from "./types";
 
 export default function App() {
@@ -27,9 +28,7 @@ export default function App() {
       setReminders(await api.list());
     } catch (e) {
       console.error(e);
-      // TEMP DIAGNOSTIC: surface the real error (status/body/url) in the banner.
-      const detail = e instanceof Error ? e.message : String(e);
-      setError(`${t.loadError}\n\n🧪 ${import.meta.env.VITE_API_URL || "(no VITE_API_URL)"}\n${detail}`);
+      setError(t.loadError);
     }
   }, [t.loadError]);
 
@@ -112,7 +111,7 @@ export default function App() {
       </div>
 
       <button className="fab" onClick={openNew} aria-label={t.newReminder}>
-        +
+        <PlusIcon size={26} />
       </button>
 
       {editing !== undefined && (
