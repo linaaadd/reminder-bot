@@ -14,11 +14,18 @@ import logging
 import sys
 
 import uvicorn
+from telegram import (
+    BotCommand,
+    MenuButtonCommands,
+    MenuButtonWebApp,
+    WebAppInfo,
+)
 from telegram.ext import Application, ApplicationBuilder
 
 from app.api.server import create_api
 from app.config import settings
 from app.handlers import register
+from app.i18n import SUPPORTED, t
 from app.services.scheduler import scheduler
 
 logging.basicConfig(
@@ -26,6 +33,75 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
 )
 logger = logging.getLogger("reminder-bot")
+
+
+# Short command descriptions for the Telegram "/" menu, per language.
+# Falls back to English for any language not listed here.
+_CMD_DESCRIPTIONS: dict[str, dict[str, str]] = {
+    "en": {
+        "start": "Start / how it works",
+        "list": "My upcoming reminders",
+        "timezone": "Set my timezone",
+        "help": "Help",
+    },
+    "ru": {
+        "start": "Старт / как это работает",
+        "list": "Мои ближайшие напоминания",
+        "timezone": "Установить часовой пояс",
+        "help": "Помощь",
+    },
+    "de": {
+        "start": "Start / wie es funktioniert",
+        "list": "Kommende Erinnerungen",
+        "timezone": "Zeitzone einstellen",
+        "help": "Hilfe",
+    },
+    "uk": {
+        "start": "Старт / як це працює",
+        "list": "Найближчі нагадування",
+        "timezone": "Встановити часовий пояс",
+        "help": "Допомога",
+    },
+    "es": {
+        "start": "Inicio / cómo funciona",
+        "list": "Próximos recordatorios",
+        "timezone": "Configurar zona horaria",
+        "help": "Ayuda",
+    },
+}
+
+
+async def _setup_bot_menu(application: Application) -> None:
+    """Register the command list and the WebApp menu button (one-time on boot).
+
+    * setMyCommands → populates the blue "/" command menu (per language).
+    * setChatMenuButton → makes the menu button open the WebApp directly,
+      so users have an obvious way in (only if WEBAPP_URL is configured).
+    """
+    bot = application.bot
+    order = ("start", "list", "timezone", "help")
+
+    # English default + one set per supported language.
+    en = _CMD_DESCRIPTIONS["en"]
+    await bot.set_my_commands([BotCommand(c, en[c]) for c in order])
+    for lang in SUPPORTED:
+        desc = _CMD_DESCRIPTIONS.get(lang, en)
+        await bot.set_my_commands(
+            [BotCommand(c, desc[c]) for c in order], language_code=lang
+        )
+
+    # Menu button: open the WebApp if we have a URL, else fall back to commands.
+    if settings.webapp_url:
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(
+                text=t("btn_webapp", "en"),
+                web_app=WebAppInfo(url=settings.webapp_url),
+            )
+        )
+        logger.info("WebApp menu button set -> %s", settings.webapp_url)
+    else:
+        await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+        logger.warning("WEBAPP_URL not set; WebApp button unavailable")
 
 
 async def _run() -> None:
@@ -37,6 +113,9 @@ async def _run() -> None:
 
     await application.initialize()
     await application.start()
+
+    # Register the "/" command menu and the WebApp menu button.
+    await _setup_bot_menu(application)
 
     # Scheduler needs the bot to deliver messages; restore jobs after a restart.
     scheduler.start(application.bot)

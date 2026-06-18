@@ -28,10 +28,15 @@ async def _transcribe_bytes(data: bytes, filename: str) -> str:
         file=(filename, data),
         model=settings.whisper_model,
         # No `language=` — let Whisper auto-detect (multilingual requirement).
-        response_format="text",
+        response_format="json",
     )
-    # With response_format="text" the SDK returns a plain string.
-    return resp if isinstance(resp, str) else getattr(resp, "text", str(resp))
+    # JSON response → object with a `.text` attribute (or a dict-like).
+    if isinstance(resp, str):
+        return resp
+    text = getattr(resp, "text", None)
+    if text is None and isinstance(resp, dict):
+        text = resp.get("text")
+    return text or ""
 
 
 async def _ffmpeg_to_mp3(data: bytes) -> bytes | None:
@@ -53,13 +58,18 @@ async def _ffmpeg_to_mp3(data: bytes) -> bytes | None:
 
 async def transcribe(data: bytes, *, filename: str = "audio.ogg") -> str:
     """Transcribe audio bytes to text. Raises on unrecoverable failure."""
+    logger.info("Transcribing %d bytes (%s)", len(data), filename)
     try:
         text = await _transcribe_bytes(data, filename)
         return text.strip()
     except Exception as exc:  # noqa: BLE001 - we want a fallback path
-        logger.warning("Whisper raw upload failed (%s); trying ffmpeg", exc)
+        # Log the real error (status/body) so deploy issues are diagnosable.
+        logger.warning(
+            "Whisper raw upload failed: %r; trying ffmpeg fallback", exc
+        )
         mp3 = await _ffmpeg_to_mp3(data)
         if mp3 is None:
+            logger.error("ffmpeg unavailable or failed; cannot transcribe")
             raise
         text = await _transcribe_bytes(mp3, "audio.mp3")
         return text.strip()
