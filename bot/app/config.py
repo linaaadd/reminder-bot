@@ -1,7 +1,7 @@
 """Application configuration loaded from environment / .env file."""
 from __future__ import annotations
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,6 +32,28 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @field_validator("webapp_url")
+    @classmethod
+    def _normalize_webapp_url(cls, v: str) -> str:
+        """Ensure an https scheme and no trailing slash.
+
+        Telegram only accepts https WebApp URLs; a bare host like
+        ``foo.up.railway.app`` (no scheme) is rejected with a 400. We add the
+        scheme so a small config mistake doesn't break startup.
+        """
+        v = (v or "").strip().rstrip("/")
+        if not v:
+            return ""
+        if v.startswith("http://"):
+            v = "https://" + v[len("http://"):]
+        elif not v.startswith("https://"):
+            v = "https://" + v
+        return v
+
+    @property
+    def webapp_url_is_https(self) -> bool:
+        return self.webapp_url.startswith("https://")
 
     @property
     def async_database_url(self) -> str:

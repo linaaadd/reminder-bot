@@ -90,18 +90,24 @@ async def _setup_bot_menu(application: Application) -> None:
             [BotCommand(c, desc[c]) for c in order], language_code=lang
         )
 
-    # Menu button: open the WebApp if we have a URL, else fall back to commands.
-    if settings.webapp_url:
-        await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(
-                text=t("btn_webapp", "en"),
-                web_app=WebAppInfo(url=settings.webapp_url),
+    # Menu button: open the WebApp if we have a valid https URL, else commands.
+    try:
+        if settings.webapp_url_is_https:
+            await bot.set_chat_menu_button(
+                menu_button=MenuButtonWebApp(
+                    text=t("btn_webapp", "en"),
+                    web_app=WebAppInfo(url=settings.webapp_url),
+                )
             )
-        )
-        logger.info("WebApp menu button set -> %s", settings.webapp_url)
-    else:
-        await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
-        logger.warning("WEBAPP_URL not set; WebApp button unavailable")
+            logger.info("WebApp menu button set -> %s", settings.webapp_url)
+        else:
+            await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+            logger.warning(
+                "WEBAPP_URL missing/invalid (%r); WebApp button unavailable",
+                settings.webapp_url,
+            )
+    except Exception as exc:  # noqa: BLE001 - never let menu setup crash the bot
+        logger.warning("Could not set chat menu button: %s", exc)
 
 
 async def _run() -> None:
@@ -115,7 +121,11 @@ async def _run() -> None:
     await application.start()
 
     # Register the "/" command menu and the WebApp menu button.
-    await _setup_bot_menu(application)
+    # Belt-and-suspenders: menu setup must never take down the bot.
+    try:
+        await _setup_bot_menu(application)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Bot menu setup failed (continuing): %s", exc)
 
     # Scheduler needs the bot to deliver messages; restore jobs after a restart.
     scheduler.start(application.bot)

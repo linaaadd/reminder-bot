@@ -15,7 +15,7 @@ from app.i18n import t
 
 def webapp_keyboard(lang: str | None) -> ReplyKeyboardMarkup | None:
     """Persistent reply keyboard with the WebApp button (if WEBAPP_URL is set)."""
-    if not settings.webapp_url:
+    if not settings.webapp_url_is_https:
         return None
     return ReplyKeyboardMarkup(
         [[KeyboardButton(t("btn_webapp", lang), web_app=WebAppInfo(url=settings.webapp_url))]],
