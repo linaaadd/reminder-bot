@@ -33,6 +33,18 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @field_validator("telegram_bot_token", "groq_api_key", "database_url")
+    @classmethod
+    def _strip_secret(cls, v: str) -> str:
+        """Trim stray whitespace/newlines from secrets.
+
+        A trailing space pasted into an env var (e.g. GROQ_API_KEY) produces an
+        ``Authorization: Bearer <key> `` header that h11 rejects with
+        ``LocalProtocolError: Illegal header value`` — which surfaces as a
+        misleading ``APIConnectionError('Connection error.')``.
+        """
+        return (v or "").strip()
+
     @field_validator("webapp_url")
     @classmethod
     def _normalize_webapp_url(cls, v: str) -> str:
