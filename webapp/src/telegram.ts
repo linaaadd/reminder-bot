@@ -32,8 +32,17 @@ declare global {
 
 export const tg = window.Telegram?.WebApp;
 
-/** Raw initData string sent to the backend in the X-Telegram-Init-Data header. */
-export const initData = tg?.initData ?? "";
+/**
+ * Raw initData string sent to the backend in the X-Telegram-Init-Data header.
+ *
+ * Read LAZILY (not as a module-load constant): the Telegram SDK may not have
+ * populated initData at the moment this module is first imported, which would
+ * cache an empty string and cause every API call to 401. Reading it per request
+ * guarantees we get the real value once the WebApp is initialized.
+ */
+export function getInitData(): string {
+  return window.Telegram?.WebApp?.initData ?? "";
+}
 
 /** Telegram-reported UI language (e.g. "de", "ru"); undefined outside Telegram. */
 export const tgLanguage = tg?.initDataUnsafe?.user?.language_code;

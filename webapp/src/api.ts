@@ -1,5 +1,5 @@
 /** Backend API client. Every request carries the signed Telegram initData. */
-import { initData } from "./telegram";
+import { getInitData } from "./telegram";
 import type { Me, Reminder } from "./types";
 
 // Trim stray whitespace/newline and any trailing slash: a trailing space in
@@ -12,7 +12,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "X-Telegram-Init-Data": initData,
+      "X-Telegram-Init-Data": getInitData(),
       ...(init?.headers ?? {}),
     },
   });
