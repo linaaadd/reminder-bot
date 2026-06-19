@@ -28,7 +28,9 @@ export default function App() {
       setReminders(await api.list());
     } catch (e) {
       console.error(e);
-      setError(t.loadError);
+      // TEMP: show the real error to pin down intermittent load failures.
+      const detail = e instanceof Error ? e.message : String(e);
+      setError(`${t.loadError}\n\n🧪 ${detail}`);
     }
   }, [t.loadError]);
 
