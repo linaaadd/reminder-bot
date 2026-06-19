@@ -1,4 +1,18 @@
-# 🔔 Голосовые напоминания — Telegram-бот + WebApp-календарь
+<p align="center">
+  <img src="brand/social-preview.png" alt="Voice Reminder Bot" width="100%" />
+</p>
+
+<h1 align="center">🔔 Голосовые напоминания — Telegram-бот + WebApp-календарь</h1>
+
+<p align="center">
+  <a href="https://t.me/SayItRemindBot"><img src="https://img.shields.io/badge/Telegram-%40SayItRemindBot-2563EB?logo=telegram&logoColor=white" alt="Telegram bot" /></a>
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
+  <img src="https://img.shields.io/badge/FastAPI-async-059669?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-Vite%20%2B%20TS-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Groq-Whisper%20%2B%20LLM-F55036?logo=groq&logoColor=white" alt="Groq" />
+  <img src="https://img.shields.io/badge/deploy-Railway-7C3AED?logo=railway&logoColor=white" alt="Railway" />
+  <img src="https://img.shields.io/badge/license-MIT-94A3B8" alt="MIT" />
+</p>
 
 Бот-помощник для тех, кто всё забывает. Пользователь присылает **голосовое**
 или **текстовое** сообщение («напомни завтра в 6 вечера купить молоко»), бот
@@ -8,6 +22,8 @@
 
 Проект **multi-user**: любой, кто написал боту `/start`, автоматически
 регистрируется и видит только свои напоминания.
+
+👉 **Живой бот:** [@SayItRemindBot](https://t.me/SayItRemindBot) — напиши `/start`.
 
 ---
 
