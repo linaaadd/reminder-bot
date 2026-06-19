@@ -14,13 +14,18 @@ import logging
 import sys
 
 import uvicorn
-from telegram import BotCommand, MenuButtonCommands
+from telegram import (
+    BotCommand,
+    MenuButtonCommands,
+    MenuButtonWebApp,
+    WebAppInfo,
+)
 from telegram.ext import Application, ApplicationBuilder
 
 from app.api.server import create_api
 from app.config import settings
 from app.handlers import register
-from app.i18n import SUPPORTED
+from app.i18n import SUPPORTED, t
 from app.services.scheduler import scheduler
 
 logging.basicConfig(
@@ -85,11 +90,23 @@ async def _setup_bot_menu(application: Application) -> None:
             [BotCommand(c, desc[c]) for c in order], language_code=lang
         )
 
-    # The blue Menu button shows the COMMAND list (/start /list /timezone /help).
-    # WebApp access is the single reply-keyboard "My reminders" button, so we
-    # don't end up with two duplicate WebApp entry points.
+    # The blue Menu button opens the WebApp. This is the SINGLE WebApp entry
+    # point (the reply-keyboard button is removed) and — crucially — Web Apps
+    # launched from the menu button receive a valid initData, whereas the
+    # reply-keyboard launch delivered an empty initData (401). Commands stay
+    # reachable by typing "/". Falls back to the command list if no https URL.
     try:
-        await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+        if settings.webapp_url_is_https:
+            await bot.set_chat_menu_button(
+                menu_button=MenuButtonWebApp(
+                    text=t("btn_webapp", "en"),
+                    web_app=WebAppInfo(url=settings.webapp_url),
+                )
+            )
+            logger.info("WebApp menu button set -> %s", settings.webapp_url)
+        else:
+            await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+            logger.warning("WEBAPP_URL missing/invalid; menu shows commands")
     except Exception as exc:  # noqa: BLE001 - never let menu setup crash the bot
         logger.warning("Could not set chat menu button: %s", exc)
 

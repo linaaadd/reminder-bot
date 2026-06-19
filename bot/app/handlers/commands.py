@@ -3,12 +3,11 @@ from __future__ import annotations
 
 import logging
 
-from telegram import Update
+from telegram import ReplyKeyboardRemove, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from app.db.base import SessionLocal
-from app.handlers.common import webapp_keyboard
 from app.i18n import normalize_lang, t
 from app.services import reminders as reminders_repo
 from app.services import users as users_repo
@@ -32,10 +31,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         tz = user.timezone
 
+    # Clear any stale reply-keyboard WebApp button from earlier versions — the
+    # WebApp is now opened from the blue menu button (which provides initData).
     await update.message.reply_text(
         t("start_greeting", lang, name=tg_user.first_name or ""),
         parse_mode=ParseMode.MARKDOWN,
-        reply_markup=webapp_keyboard(lang),
+        reply_markup=ReplyKeyboardRemove(),
     )
     # On first contact, gently nudge about the timezone.
     if created:
