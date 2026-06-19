@@ -6,6 +6,7 @@ import { LangSwitch } from "./components/LangSwitch";
 import { ReminderModal } from "./components/ReminderModal";
 import { detectLang, saveLang, strings, type Lang } from "./i18n";
 import { PlusIcon } from "./components/icons";
+import { getInitData } from "./telegram";
 import type { Reminder } from "./types";
 
 export default function App() {
@@ -28,9 +29,9 @@ export default function App() {
       setReminders(await api.list());
     } catch (e) {
       console.error(e);
-      // TEMP: show the real error to pin down intermittent load failures.
+      // TEMP: show the real error + initData length to pin down auth failures.
       const detail = e instanceof Error ? e.message : String(e);
-      setError(`${t.loadError}\n\n🧪 ${detail}`);
+      setError(`${t.loadError}\n\n🧪 initDataLen=${getInitData().length}\n${detail}`);
     }
   }, [t.loadError]);
 
