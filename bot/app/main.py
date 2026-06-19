@@ -14,18 +14,13 @@ import logging
 import sys
 
 import uvicorn
-from telegram import (
-    BotCommand,
-    MenuButtonCommands,
-    MenuButtonWebApp,
-    WebAppInfo,
-)
+from telegram import BotCommand, MenuButtonCommands
 from telegram.ext import Application, ApplicationBuilder
 
 from app.api.server import create_api
 from app.config import settings
 from app.handlers import register
-from app.i18n import SUPPORTED, t
+from app.i18n import SUPPORTED
 from app.services.scheduler import scheduler
 
 logging.basicConfig(
@@ -41,30 +36,35 @@ _CMD_DESCRIPTIONS: dict[str, dict[str, str]] = {
     "en": {
         "start": "Start / how it works",
         "list": "My upcoming reminders",
+        "app": "Open the calendar (WebApp)",
         "timezone": "Set my timezone",
         "help": "Help",
     },
     "ru": {
         "start": "Старт / как это работает",
         "list": "Мои ближайшие напоминания",
+        "app": "Открыть календарь (WebApp)",
         "timezone": "Установить часовой пояс",
         "help": "Помощь",
     },
     "de": {
         "start": "Start / wie es funktioniert",
         "list": "Kommende Erinnerungen",
+        "app": "Kalender öffnen (WebApp)",
         "timezone": "Zeitzone einstellen",
         "help": "Hilfe",
     },
     "uk": {
         "start": "Старт / як це працює",
         "list": "Найближчі нагадування",
+        "app": "Відкрити календар (WebApp)",
         "timezone": "Встановити часовий пояс",
         "help": "Допомога",
     },
     "es": {
         "start": "Inicio / cómo funciona",
         "list": "Próximos recordatorios",
+        "app": "Abrir el calendario (WebApp)",
         "timezone": "Configurar zona horaria",
         "help": "Ayuda",
     },
@@ -79,7 +79,7 @@ async def _setup_bot_menu(application: Application) -> None:
       so users have an obvious way in (only if WEBAPP_URL is configured).
     """
     bot = application.bot
-    order = ("start", "list", "timezone", "help")
+    order = ("start", "list", "app", "timezone", "help")
 
     # English default + one set per supported language.
     en = _CMD_DESCRIPTIONS["en"]
@@ -90,23 +90,11 @@ async def _setup_bot_menu(application: Application) -> None:
             [BotCommand(c, desc[c]) for c in order], language_code=lang
         )
 
-    # The blue Menu button opens the WebApp. This is the SINGLE WebApp entry
-    # point (the reply-keyboard button is removed) and — crucially — Web Apps
-    # launched from the menu button receive a valid initData, whereas the
-    # reply-keyboard launch delivered an empty initData (401). Commands stay
-    # reachable by typing "/". Falls back to the command list if no https URL.
+    # The blue Menu button shows the COMMAND list. The WebApp opens from the
+    # inline button in /start, /list and /app — inline web_app buttons deliver
+    # a valid initData (the reply-keyboard launch delivered an empty one → 401).
     try:
-        if settings.webapp_url_is_https:
-            await bot.set_chat_menu_button(
-                menu_button=MenuButtonWebApp(
-                    text=t("btn_webapp", "en"),
-                    web_app=WebAppInfo(url=settings.webapp_url),
-                )
-            )
-            logger.info("WebApp menu button set -> %s", settings.webapp_url)
-        else:
-            await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
-            logger.warning("WEBAPP_URL missing/invalid; menu shows commands")
+        await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
     except Exception as exc:  # noqa: BLE001 - never let menu setup crash the bot
         logger.warning("Could not set chat menu button: %s", exc)
 

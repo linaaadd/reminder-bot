@@ -17,6 +17,7 @@ def register(app: Application) -> None:
     app.add_handler(CommandHandler("start", commands.start))
     app.add_handler(CommandHandler("help", commands.help_cmd))
     app.add_handler(CommandHandler("list", commands.list_cmd))
+    app.add_handler(CommandHandler("app", commands.app_cmd))
     app.add_handler(CommandHandler("timezone", commands.timezone_cmd))
 
     # Inline button callbacks (save/edit/cancel/done/snooze)

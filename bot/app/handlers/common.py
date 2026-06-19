@@ -4,8 +4,6 @@ from __future__ import annotations
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
     WebAppInfo,
 )
 
@@ -13,13 +11,25 @@ from app.config import settings
 from app.i18n import t
 
 
-def webapp_keyboard(lang: str | None) -> ReplyKeyboardMarkup | None:
-    """Persistent reply keyboard with the WebApp button (if WEBAPP_URL is set)."""
+def webapp_inline(lang: str | None) -> InlineKeyboardMarkup | None:
+    """Inline button that opens the WebApp.
+
+    Inline web_app buttons deliver a valid Telegram ``initData`` (unlike
+    reply-keyboard web_app buttons, which delivered an empty initData → 401),
+    so this is the WebApp entry point while the blue menu button stays on the
+    command list. Returns None if WEBAPP_URL isn't a valid https URL.
+    """
     if not settings.webapp_url_is_https:
         return None
-    return ReplyKeyboardMarkup(
-        [[KeyboardButton(t("btn_webapp", lang), web_app=WebAppInfo(url=settings.webapp_url))]],
-        resize_keyboard=True,
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    t("btn_webapp", lang),
+                    web_app=WebAppInfo(url=settings.webapp_url),
+                )
+            ]
+        ]
     )
 
 

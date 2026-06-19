@@ -343,8 +343,12 @@ button {
 .rbc-month-view .rbc-event.rbc-selected {
   outline: none;
 }
+/* The custom MonthEvent renders inside .rbc-event-content, so it must stay
+   visible — it already shows only a dot (no title text). */
 .rbc-month-view .rbc-event-content {
-  display: none; /* no text in month, just the dot */
+  display: flex;
+  align-items: center;
+  line-height: 1;
 }
 .rbc-month-view .rbc-row-segment {
   padding: 0 2px;

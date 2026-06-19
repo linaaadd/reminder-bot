@@ -8,6 +8,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from app.db.base import SessionLocal
+from app.handlers.common import webapp_inline
 from app.i18n import normalize_lang, t
 from app.services import reminders as reminders_repo
 from app.services import users as users_repo
@@ -31,12 +32,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         tz = user.timezone
 
-    # Clear any stale reply-keyboard WebApp button from earlier versions — the
-    # WebApp is now opened from the blue menu button (which provides initData).
+    # Greeting carries the inline WebApp button (delivers a valid initData).
+    # reply_markup is the inline button if WEBAPP_URL is set, else clear any
+    # legacy reply keyboard from older versions.
     await update.message.reply_text(
         t("start_greeting", lang, name=tg_user.first_name or ""),
         parse_mode=ParseMode.MARKDOWN,
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=webapp_inline(lang) or ReplyKeyboardRemove(),
     )
     # On first contact, gently nudge about the timezone.
     if created:
@@ -74,7 +76,9 @@ async def list_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         tz = user.timezone
 
     if not items:
-        await update.message.reply_text(t("list_empty", lang))
+        await update.message.reply_text(
+            t("list_empty", lang), reply_markup=webapp_inline(lang)
+        )
         return
 
     lines = [t("list_header", lang)]
@@ -83,8 +87,20 @@ async def list_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             t("list_item", lang, title=r.title, when=format_local(r.remind_at, tz))
         )
     await update.message.reply_text(
-        "\n".join(lines), parse_mode=ParseMode.MARKDOWN
+        "\n".join(lines),
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=webapp_inline(lang),
     )
+
+
+async def app_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Open the WebApp calendar via an inline button."""
+    lang = await _lang_for(update)
+    markup = webapp_inline(lang)
+    if markup is None:
+        await update.message.reply_text(t("err_generic", lang))
+        return
+    await update.message.reply_text(t("btn_webapp", lang), reply_markup=markup)
 
 
 async def timezone_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
