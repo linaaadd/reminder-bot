@@ -330,6 +330,43 @@ button {
   background: transparent;
 }
 
+/* -------- Month view: dots instead of text bars -------- */
+.rbc-month-view .rbc-event,
+.rbc-month-view .rbc-event:hover {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 2px 0 0 4px;
+  min-height: 0;
+  box-shadow: none !important;
+}
+.rbc-month-view .rbc-event:focus,
+.rbc-month-view .rbc-event.rbc-selected {
+  outline: none;
+}
+.rbc-month-view .rbc-event-content {
+  display: none; /* no text in month, just the dot */
+}
+.rbc-month-view .rbc-row-segment {
+  padding: 0 2px;
+}
+
+.evt-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: var(--dot, var(--accent));
+  vertical-align: middle;
+}
+.evt-dot.done {
+  background: transparent;
+  border: 2px solid var(--dot, var(--success));
+}
+.evt-dot.cancelled {
+  background: var(--hint);
+  opacity: 0.5;
+}
+
 /* Time (week/day) views */
 .rbc-time-view .rbc-time-gutter,
 .rbc-time-view .rbc-label {

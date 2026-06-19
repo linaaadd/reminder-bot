@@ -14,18 +14,13 @@ import logging
 import sys
 
 import uvicorn
-from telegram import (
-    BotCommand,
-    MenuButtonCommands,
-    MenuButtonWebApp,
-    WebAppInfo,
-)
+from telegram import BotCommand, MenuButtonCommands
 from telegram.ext import Application, ApplicationBuilder
 
 from app.api.server import create_api
 from app.config import settings
 from app.handlers import register
-from app.i18n import SUPPORTED, t
+from app.i18n import SUPPORTED
 from app.services.scheduler import scheduler
 
 logging.basicConfig(
@@ -90,22 +85,11 @@ async def _setup_bot_menu(application: Application) -> None:
             [BotCommand(c, desc[c]) for c in order], language_code=lang
         )
 
-    # Menu button: open the WebApp if we have a valid https URL, else commands.
+    # The blue Menu button shows the COMMAND list (/start /list /timezone /help).
+    # WebApp access is the single reply-keyboard "My reminders" button, so we
+    # don't end up with two duplicate WebApp entry points.
     try:
-        if settings.webapp_url_is_https:
-            await bot.set_chat_menu_button(
-                menu_button=MenuButtonWebApp(
-                    text=t("btn_webapp", "en"),
-                    web_app=WebAppInfo(url=settings.webapp_url),
-                )
-            )
-            logger.info("WebApp menu button set -> %s", settings.webapp_url)
-        else:
-            await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
-            logger.warning(
-                "WEBAPP_URL missing/invalid (%r); WebApp button unavailable",
-                settings.webapp_url,
-            )
+        await bot.set_chat_menu_button(menu_button=MenuButtonCommands())
     except Exception as exc:  # noqa: BLE001 - never let menu setup crash the bot
         logger.warning("Could not set chat menu button: %s", exc)
 

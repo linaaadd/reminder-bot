@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import {
   Calendar as BigCalendar,
   dateFnsLocalizer,
@@ -13,9 +13,47 @@ import { CalendarToolbar } from "./CalendarToolbar";
 
 const LOCALES = { en: enUS, ru, de, uk, es } as const;
 
+// Distinct, accessible palette. Each reminder gets a stable color derived from
+// its title, so the same task always shows the same color and different tasks
+// are visually distinguishable ("sort by color").
+const PALETTE = [
+  "#2563EB", // blue
+  "#059669", // green
+  "#D97706", // amber
+  "#DC2626", // red
+  "#7C3AED", // violet
+  "#0891B2", // cyan
+  "#DB2777", // pink
+  "#65A30D", // lime
+];
+
+function colorFor(r: Reminder): string {
+  let h = 0;
+  for (let i = 0; i < r.title.length; i++) h = (h * 31 + r.title.charCodeAt(i)) | 0;
+  return PALETTE[Math.abs(h) % PALETTE.length];
+}
+
 export interface ReminderEvent extends Event {
   id: number;
   status: Reminder["status"];
+  color: string;
+}
+
+/** Month view: render reminders as compact colored dots (no text). */
+function MonthEvent({ event }: { event: ReminderEvent }) {
+  const cls =
+    event.status === "done"
+      ? "evt-dot done"
+      : event.status === "cancelled"
+        ? "evt-dot cancelled"
+        : "evt-dot";
+  return (
+    <span
+      className={cls}
+      style={{ ["--dot" as string]: event.color } as CSSProperties}
+      title={event.title as string}
+    />
+  );
 }
 
 export function ReminderCalendar({
@@ -61,6 +99,7 @@ export function ReminderCalendar({
           start,
           end: new Date(start.getTime() + 30 * 60 * 1000),
           status: r.status,
+          color: colorFor(r),
         };
       }),
     [reminders],
@@ -95,6 +134,7 @@ export function ReminderCalendar({
       messages={messages}
       components={{
         toolbar: (props) => <CalendarToolbar {...props} t={t} />,
+        month: { event: MonthEvent },
       }}
       onSelectEvent={(e) => onSelectEvent((e as ReminderEvent).id)}
       onSelectSlot={(slot) => onSelectSlot(slot.start as Date)}
@@ -106,7 +146,9 @@ export function ReminderCalendar({
             : ev.status === "cancelled"
               ? "rbc-event-cancelled"
               : "";
-        return { className: cls };
+        // Color the time-grid (week/day) and agenda bars by reminder color.
+        // Month uses the dot component, where CSS clears this background.
+        return { className: cls, style: { backgroundColor: ev.color } };
       }}
       style={{ height: "100%" }}
     />
