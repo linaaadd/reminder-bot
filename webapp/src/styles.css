@@ -417,19 +417,25 @@ button {
   background: var(--danger);
   height: 2px;
 }
-/* Week/day events: show the title (not the redundant time), tappable height */
+/* Week/day events: show the time, centered in the day column (not at the edge) */
 .rbc-time-view .rbc-event {
   min-height: 24px;
   border-radius: 6px;
-  padding: 2px 6px;
+  padding: 2px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-.rbc-time-view .rbc-event-label {
-  display: none;
-}
+.rbc-time-view .rbc-event-label,
 .rbc-time-view .rbc-event-content {
+  width: 100%;
+  text-align: center;
   font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Agenda / list view */

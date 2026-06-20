@@ -189,7 +189,6 @@ export function ReminderCalendar({
       onView={onView}
       onNavigate={onNavigate}
       views={["month", "week", "day", "agenda"]}
-      selectable
       popup
       messages={messages}
       components={{
