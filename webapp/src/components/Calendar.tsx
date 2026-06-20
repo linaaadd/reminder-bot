@@ -153,6 +153,16 @@ export function ReminderCalendar({
     [reminders],
   );
 
+  // The week view needs 7 columns; on a phone that's too narrow to read.
+  // Drop it on small screens — Day covers detailed time, List covers the rest.
+  const isNarrow =
+    typeof window !== "undefined" && window.innerWidth < 680;
+  const viewList = (
+    isNarrow
+      ? ["month", "day", "agenda"]
+      : ["month", "week", "day", "agenda"]
+  ) as View[];
+
   // Group reminders by calendar day for the custom month dot row.
   const remindersByDay = useMemo(() => {
     const map = new Map<string, ReminderEvent[]>();
@@ -188,9 +198,18 @@ export function ReminderCalendar({
       date={date}
       onView={onView}
       onNavigate={onNavigate}
-      views={["month", "week", "day", "agenda"]}
+      views={viewList}
       popup
+      selectable
       messages={messages}
+      formats={{
+        // Compact event time: just the start (e.g. "09:00"), so it fits a cell.
+        eventTimeRangeFormat: (
+          { start }: { start: Date },
+          culture?: string,
+          loc?: { format: (d: Date, f: string, c?: string) => string },
+        ) => (loc ? loc.format(start, "HH:mm", culture) : ""),
+      }}
       components={{
         toolbar: (props) => <CalendarToolbar {...props} t={t} />,
         month: {
@@ -209,7 +228,17 @@ export function ReminderCalendar({
         },
       }}
       onSelectEvent={(e) => onSelectEvent((e as ReminderEvent).id)}
-      onSelectSlot={(slot) => onSelectSlot(slot.start as Date)}
+      onSelectSlot={(slot) => {
+        const start = slot.start as Date;
+        if (view === "month") {
+          // A month cell tap opens that day — never the "new reminder" modal.
+          onNavigate(start);
+          onView("day");
+        } else {
+          // Day/week: tapping a time slot creates a reminder at that time.
+          onSelectSlot(start);
+        }
+      }}
       eventPropGetter={(e) => {
         const ev = e as ReminderEvent;
         const cls =

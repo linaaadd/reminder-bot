@@ -419,9 +419,9 @@ button {
 }
 /* Week/day events: show the time, centered in the day column (not at the edge) */
 .rbc-time-view .rbc-event {
-  min-height: 24px;
+  min-height: 22px;
   border-radius: 6px;
-  padding: 2px 4px;
+  padding: 2px 1px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -431,11 +431,17 @@ button {
 .rbc-time-view .rbc-event-content {
   width: 100%;
   text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Day view has a full-width column — give the time more room there. */
+.rbc-day-view .rbc-event-label,
+.rbc-day-view .rbc-event-content {
+  font-size: 0.74rem;
 }
 
 /* Agenda / list view */
