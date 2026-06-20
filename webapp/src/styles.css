@@ -351,6 +351,12 @@ button {
   font-size: 0.8rem;
   font-weight: 500;
   line-height: 1;
+  background: transparent;
+  border: none;
+  padding: 2px;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
 }
 .mcell-num.today {
   display: inline-flex;
@@ -410,6 +416,20 @@ button {
 .rbc-current-time-indicator {
   background: var(--danger);
   height: 2px;
+}
+/* Week/day events: show the title (not the redundant time), tappable height */
+.rbc-time-view .rbc-event {
+  min-height: 24px;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+.rbc-time-view .rbc-event-label {
+  display: none;
+}
+.rbc-time-view .rbc-event-content {
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 /* Agenda / list view */

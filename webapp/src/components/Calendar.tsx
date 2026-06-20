@@ -56,17 +56,29 @@ function DayCellHeader({
   label,
   items,
   today,
+  onOpenDay,
   onPick,
 }: {
   label: string;
   items: ReminderEvent[];
   today: boolean;
+  onOpenDay: () => void;
   onPick: (id: number) => void;
 }) {
   const MAX = 3;
   return (
     <div className="mcell">
-      <span className={today ? "mcell-num today" : "mcell-num"}>{label}</span>
+      <button
+        type="button"
+        className={today ? "mcell-num today" : "mcell-num"}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenDay();
+        }}
+        title={label}
+      >
+        {label}
+      </button>
       {items.length > 0 && (
         <div className="mcell-dots">
           {items.slice(0, MAX).map((e) => (
@@ -188,6 +200,10 @@ export function ReminderCalendar({
               label={props.label}
               items={remindersByDay.get(dayKey(props.date)) ?? []}
               today={dayKey(props.date) === dayKey(new Date())}
+              onOpenDay={() => {
+                onNavigate(props.date);
+                onView("day");
+              }}
               onPick={onSelectEvent}
             />
           ),
