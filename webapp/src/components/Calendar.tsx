@@ -200,7 +200,7 @@ export function ReminderCalendar({
       onNavigate={onNavigate}
       views={viewList}
       popup
-      selectable
+      selectable={view !== "month"}
       messages={messages}
       formats={{
         // Compact event time: just the start (e.g. "09:00"), so it fits a cell.
