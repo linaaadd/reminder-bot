@@ -330,45 +330,68 @@ button {
   background: transparent;
 }
 
-/* -------- Month view: dots instead of text bars -------- */
+/* -------- Month view: one horizontal dot row per day (custom header) -------- */
+/* rbc's own stacked event bars are hidden; dots are rendered in the cell head. */
 .rbc-month-view .rbc-event,
-.rbc-month-view .rbc-event:hover {
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 2px 0 0 4px;
-  min-height: 0;
-  box-shadow: none !important;
+.rbc-month-view .rbc-show-more {
+  display: none !important;
 }
-.rbc-month-view .rbc-event:focus,
-.rbc-month-view .rbc-event.rbc-selected {
-  outline: none;
-}
-/* The custom MonthEvent renders inside .rbc-event-content, so it must stay
-   visible — it already shows only a dot (no title text). */
-.rbc-month-view .rbc-event-content {
-  display: flex;
-  align-items: center;
-  line-height: 1;
-}
-.rbc-month-view .rbc-row-segment {
-  padding: 0 2px;
+.rbc-month-view .rbc-date-cell {
+  padding: 0;
 }
 
-.evt-dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
+.mcell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 6px 0;
+}
+.mcell-num {
+  align-self: flex-end;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1;
+}
+.mcell-num.today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--r-pill);
+  font-weight: 700;
+}
+.mcell-dots {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  align-items: center;
+  min-height: 9px;
+}
+.mdot {
+  width: 8px;
+  height: 8px;
   border-radius: var(--r-pill);
   background: var(--dot, var(--accent));
-  vertical-align: middle;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
-.evt-dot.done {
+.mdot.done {
   background: transparent;
   border: 2px solid var(--dot, var(--success));
 }
-.evt-dot.cancelled {
+.mdot.cancelled {
   background: var(--hint);
   opacity: 0.5;
+}
+.mcell-more {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--hint);
+  line-height: 1;
 }
 
 /* Time (week/day) views */

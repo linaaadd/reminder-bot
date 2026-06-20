@@ -39,20 +39,56 @@ export interface ReminderEvent extends Event {
   color: string;
 }
 
-/** Month view: render reminders as compact colored dots (no text). */
-function MonthEvent({ event }: { event: ReminderEvent }) {
-  const cls =
-    event.status === "done"
-      ? "evt-dot done"
-      : event.status === "cancelled"
-        ? "evt-dot cancelled"
-        : "evt-dot";
+const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+function dotClass(e: ReminderEvent): string {
+  if (e.status === "done") return "mdot done";
+  if (e.status === "cancelled") return "mdot cancelled";
+  return "mdot";
+}
+
+/**
+ * Custom month-cell header: the date number plus a single horizontal row of
+ * colored dots (one per reminder), like Google Calendar — instead of stacked
+ * event bars that overflow into "+N more" after one or two items.
+ */
+function DayCellHeader({
+  label,
+  items,
+  today,
+  onPick,
+}: {
+  label: string;
+  items: ReminderEvent[];
+  today: boolean;
+  onPick: (id: number) => void;
+}) {
+  const MAX = 3;
   return (
-    <span
-      className={cls}
-      style={{ ["--dot" as string]: event.color } as CSSProperties}
-      title={event.title as string}
-    />
+    <div className="mcell">
+      <span className={today ? "mcell-num today" : "mcell-num"}>{label}</span>
+      {items.length > 0 && (
+        <div className="mcell-dots">
+          {items.slice(0, MAX).map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              className={dotClass(e)}
+              style={{ ["--dot" as string]: e.color } as CSSProperties}
+              title={e.title as string}
+              aria-label={e.title as string}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                onPick(e.id);
+              }}
+            />
+          ))}
+          {items.length > MAX && (
+            <span className="mcell-more">+{items.length - MAX}</span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -105,6 +141,18 @@ export function ReminderCalendar({
     [reminders],
   );
 
+  // Group reminders by calendar day for the custom month dot row.
+  const remindersByDay = useMemo(() => {
+    const map = new Map<string, ReminderEvent[]>();
+    for (const ev of events) {
+      const key = dayKey(ev.start as Date);
+      const list = map.get(key);
+      if (list) list.push(ev);
+      else map.set(key, [ev]);
+    }
+    return map;
+  }, [events]);
+
   const messages = useMemo(
     () => ({
       today: t.today,
@@ -134,7 +182,16 @@ export function ReminderCalendar({
       messages={messages}
       components={{
         toolbar: (props) => <CalendarToolbar {...props} t={t} />,
-        month: { event: MonthEvent },
+        month: {
+          dateHeader: (props: { label: string; date: Date }) => (
+            <DayCellHeader
+              label={props.label}
+              items={remindersByDay.get(dayKey(props.date)) ?? []}
+              today={dayKey(props.date) === dayKey(new Date())}
+              onPick={onSelectEvent}
+            />
+          ),
+        },
       }}
       onSelectEvent={(e) => onSelectEvent((e as ReminderEvent).id)}
       onSelectSlot={(slot) => onSelectSlot(slot.start as Date)}
